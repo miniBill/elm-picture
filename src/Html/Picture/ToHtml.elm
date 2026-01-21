@@ -1,8 +1,9 @@
-module Html.Picture.ToHtml exposing (Source, picture, source)
+module Html.Picture.ToHtml exposing (Source, sourceToHtml)
 
 import Css.Media as Media
 import Html exposing (Attribute, Html)
 import Html.Attributes
+import Html.Extra
 
 
 type alias Source =
@@ -13,44 +14,12 @@ type alias Source =
     }
 
 
-picture :
-    { pictureAttributes : List (Attribute msg)
-    , sources : List Source
-    , imgAttributes : List (Attribute msg)
-    , src : String
-    , alt : Maybe String
-    }
-    -> Html msg
-picture config =
-    Html.node "picture"
-        config.pictureAttributes
-        (List.map source config.sources
-            ++ [ Html.img
-                    (Html.Attributes.src config.src
-                        :: attrIf Html.Attributes.alt config.alt
-                        :: config.imgAttributes
-                    )
-                    []
-               ]
-        )
-
-
-source : Source -> Html msg
-source config =
+sourceToHtml : Source -> Html msg
+sourceToHtml config =
     Html.source
         (Html.Attributes.attribute "srcset" config.srcset
-            :: attrIf Html.Attributes.media (Maybe.map Media.expressionToString config.media)
-            :: attrIf Html.Attributes.type_ config.type_
+            :: Html.Extra.attributeMaybe Html.Attributes.media (Maybe.map Media.expressionToString config.media)
+            :: Html.Extra.attributeMaybe Html.Attributes.type_ config.type_
             :: config.attributes
         )
         []
-
-
-attrIf : (a -> Attribute msg) -> Maybe a -> Attribute msg
-attrIf toAttr value =
-    case value of
-        Nothing ->
-            Html.Attributes.classList []
-
-        Just v ->
-            toAttr v
