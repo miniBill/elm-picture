@@ -6,7 +6,7 @@ import Html.Attributes
 import Html.Extra
 
 
-type alias Source =
+type alias Source msg =
     { srcset : String
     , media : Maybe Media.Expression
     , type_ : Maybe String
@@ -14,7 +14,7 @@ type alias Source =
     }
 
 
-sourceToHtml : Source -> Html msg
+sourceToHtml : Source msg -> Html msg
 sourceToHtml config =
     Html.source
         (Html.Attributes.attribute "srcset" config.srcset

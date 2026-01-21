@@ -22,8 +22,8 @@ import Html.Picture.ToHtml
 
 
 {-| -}
-type Source
-    = Source Html.Picture.ToHtml.Source
+type Source msg
+    = Source (Html.Picture.ToHtml.Source msg)
 
 
 {-| -}
@@ -33,14 +33,14 @@ source :
     , type_ : Maybe String
     , attributes : List (Attribute msg)
     }
-    -> Source
+    -> Source msg
 source =
     Source
 
 
 {-| -}
 picture :
-    { sources : List Source
+    { sources : List (Source msg)
     , imgAttributes : List (Attribute msg)
     , src : String
     , alt : Maybe String
