@@ -18,8 +18,18 @@ sourceToHtml : Source msg -> Html msg
 sourceToHtml config =
     Html.source
         (Html.Attributes.attribute "srcset" config.srcset
-            :: Html.Extra.attributeMaybe Html.Attributes.media (Maybe.map Media.expressionToString config.media)
+            :: Html.Extra.attributeMaybe Html.Attributes.media (Maybe.map mediaExpressionToString config.media)
             :: Html.Extra.attributeMaybe Html.Attributes.type_ config.type_
             :: config.attributes
         )
         []
+
+
+mediaExpressionToString : { feature : String, value : Maybe String } -> String
+mediaExpressionToString expression =
+    case expression.value of
+        Nothing ->
+            "(" ++ expression.feature ++ ")"
+
+        Just value ->
+            "(" ++ expression.feature ++ ": " ++ value ++ ")"
