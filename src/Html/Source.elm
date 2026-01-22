@@ -1,78 +1,93 @@
-module Html.Source exposing (Image, Single, Source, WithDensities, WithWidths, fromImagesAndDensities, fromImagesAndWidths, imageWithDensityDescriptor, imageWithWidth, mediaExpressionToString, single, toHtml, withSizes)
+module Html.Source exposing
+    ( Source
+    , single, Single, fromImagesAndWidths, WithWidths, fromImagesAndDensities, WithDensities
+    , withSizes, withType
+    , toHtml
+    )
 
-{-| -}
+{-|
 
-import Css exposing (Length)
-import Css.Media as Media
-import Css.Value exposing (Value(..))
-import Html exposing (Attribute, Html)
+@docs Source
+
+
+# Building
+
+@docs single, Single, fromImagesAndWidths, WithWidths, fromImagesAndDensities, WithDensities
+
+
+# Properties
+
+@docs withSizes, withType
+
+
+# Using
+
+@docs toHtml
+
+-}
+
+import Css
+import Css.Media
+import Css.Value
+import Html
 import Html.Attributes
 import Html.Extra
-import Url exposing (Url)
 
 
-{-| -}
-type Source kind msg
+{-| A source set of images, used to build a `source` tag.
+-}
+type Source kind
     = Source
         { srcset : String
-        , media : Maybe Media.Expression
+        , media : Maybe Css.Media.Expression
         , type_ : Maybe String
-        , attributes : List (Attribute msg)
+        , sizes : Maybe (List String)
         }
 
 
+{-| A source defined using widths (`300w`).
+-}
 type WithWidths
     = WithWidths
 
 
+{-| A source defined using densities (`2x`).
+-}
 type WithDensities
     = WithDensities
 
 
+{-| A source comprised of a single image.
+-}
 type Single
     = Single
 
 
-type Image
-    = ImageWithWidth Url Int
-    | ImageWithDensityDescriptor Url Int
-
-
-imageWithWidth : Url -> Int -> Image
-imageWithWidth =
-    ImageWithWidth
-
-
-imageWithDensityDescriptor : Url -> Int -> Image
-imageWithDensityDescriptor =
-    ImageWithDensityDescriptor
-
-
-imageToString : Url -> Maybe Int -> String -> String
+imageToString : String -> Maybe Int -> String -> String
 imageToString url maybeValue specifier =
     case maybeValue of
         Nothing ->
-            Url.toString url
+            url
 
         Just value ->
-            Url.toString url ++ " " ++ String.fromInt value ++ specifier
+            url ++ " " ++ String.fromInt value ++ specifier
 
 
 {-| Build a `Source` from a single image.
 -}
-single : Url -> Source Single msg
+single : String -> Source Single
 single image =
     Source
-        { srcset = Url.toString image
+        { srcset = image
         , media = Nothing
         , type_ = Nothing
-        , attributes = []
+        , sizes = Nothing
         }
 
 
 {-| Build a `Source` from a set of images with given widths.
 -}
-fromImagesAndWidths : List { url : Url, width : Maybe Int } -> Source WithWidths msg
+fromImagesAndWidths : List { url : String, width : Maybe Int } -> Source WithWidths
 fromImagesAndWidths images =
     Source
         { srcset =
@@ -85,13 +100,13 @@ fromImagesAndWidths images =
                 )
         , media = Nothing
         , type_ = Nothing
-        , attributes = []
+        , sizes = Nothing
         }
 
 
 {-| Build a `Source` from a set of images with given densities.
 -}
-fromImagesAndDensities : List { url : Url, density : Maybe Int } -> Source WithDensities msg
+fromImagesAndDensities : List { url : String, density : Maybe Int } -> Source WithDensities
 fromImagesAndDensities images =
     Source
         { srcset =
@@ -104,49 +119,59 @@ fromImagesAndDensities images =
                 )
         , media = Nothing
         , type_ = Nothing
-        , attributes = []
+        , sizes = Nothing
         }
 
 
-withSizes : List ( Media.Expression, Value Length ) -> Maybe (Value Length) -> Source WithWidths msg -> Source WithWidths msg
+{-| Set the `size` attribute. The second argument is the (optional) default size.
+-}
+withSizes : List ( Css.Media.Expression, Css.Value.Value Css.Length ) -> Maybe (Css.Value.Value Css.Length) -> Source WithWidths -> Source WithWidths
 withSizes sizes default (Source config) =
     Source
         { config
-            | attributes =
-                config.attributes
-                    ++ [ Html.Attributes.attribute "sizes"
-                            (String.join ","
-                                (case default of
-                                    Nothing ->
-                                        List.map lengthToString sizes
+            | sizes =
+                Just
+                    (case default of
+                        Nothing ->
+                            List.map lengthToString sizes
 
-                                    Just (Value defaultSize) ->
-                                        List.map lengthToString sizes ++ [ defaultSize ]
-                                )
-                            )
-                       ]
+                        Just (Css.Value.Value defaultSize) ->
+                            List.map lengthToString sizes ++ [ defaultSize ]
+                    )
         }
 
 
-lengthToString : ( Media.Expression, Value Length ) -> String
-lengthToString ( media, Value length ) =
+{-| Set the `type` attribute.
+-}
+withType : String -> Source kind -> Source kind
+withType type_ (Source config) =
+    Source { config | type_ = Just type_ }
+
+
+lengthToString : ( Css.Media.Expression, Css.Value.Value Css.Length ) -> String
+lengthToString ( media, Css.Value.Value length ) =
     mediaExpressionToString media ++ " " ++ length
 
 
 {-| Convert a `Source` to the corresponding html tag.
 -}
-toHtml : Source kind msg -> Html msg
-toHtml (Source config) =
-    Html.source
-        (Html.Attributes.attribute "srcset" config.srcset
-            :: Html.Extra.attributeMaybe Html.Attributes.media (Maybe.map mediaExpressionToString config.media)
-            :: Html.Extra.attributeMaybe Html.Attributes.type_ config.type_
-            :: config.attributes
-        )
-        []
+toHtml : Source kind -> Html.Html msg
+toHtml source =
+    Html.source (toAttributes source) []
 
 
-mediaExpressionToString : Media.Expression -> String
+{-| Convert a `Source` to the attributes you need to build the corresponding `source`.
+-}
+toAttributes : Source kind -> List (Html.Attribute msg)
+toAttributes (Source config) =
+    [ Html.Attributes.attribute "srcset" config.srcset
+    , Html.Extra.attributeMaybe Html.Attributes.media (Maybe.map mediaExpressionToString config.media)
+    , Html.Extra.attributeMaybe Html.Attributes.type_ config.type_
+    , Html.Extra.attributeMaybe (Html.Attributes.attribute "sizes") (Maybe.map (String.join ",") config.sizes)
+    ]
+
+
+mediaExpressionToString : Css.Media.Expression -> String
 mediaExpressionToString expression =
     case expression.value of
         Nothing ->

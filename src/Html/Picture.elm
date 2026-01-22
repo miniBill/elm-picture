@@ -4,14 +4,9 @@ module Html.Picture exposing (picture)
 
 @docs picture
 
-
-## Sources
-
-@docs source, Source
-
 -}
 
-import Html exposing (Attribute, Html)
+import Html
 import Html.Attributes
 import Html.Extra
 import Html.Source as Source exposing (Source)
@@ -20,13 +15,13 @@ import Html.Source as Source exposing (Source)
 {-| Create a `picture` tag. The attributes will be placed on the inner `img` tag.
 -}
 picture :
-    List (Attribute msg)
+    List (Html.Attribute msg)
     ->
-        { sources : List (Source kind msg)
+        { sources : List (Source kind)
         , src : String
         , alt : Maybe String
         }
-    -> Html msg
+    -> Html.Html msg
 picture attrs config =
     Html.node "picture"
         []
