@@ -1,7 +1,7 @@
 module Html.Source exposing
     ( Source
     , single, Single, fromImagesAndWidths, WithWidths, fromImagesAndDensities, WithDensities
-    , withSizes, withType
+    , withSizes, withType, ImageType(..)
     , toHtml
     )
 
@@ -17,7 +17,7 @@ module Html.Source exposing
 
 # Properties
 
-@docs withSizes, withType
+@docs withSizes, withType, ImageType
 
 
 # Using
@@ -40,7 +40,7 @@ type Source kind
     = Source
         { srcset : String
         , media : Maybe Css.Media.Expression
-        , type_ : Maybe String
+        , type_ : Maybe ImageType
         , sizes : Maybe (List String)
         }
 
@@ -141,9 +141,25 @@ withSizes sizes default (Source config) =
         }
 
 
+{-| Image types supported
+-}
+type ImageType
+    = APNG
+    | AVIF
+    | BMP
+    | GIF
+    | ICO
+    | JPEG
+    | JPEG_XL
+    | PNG
+    | SVG
+    | TIFF
+    | WebP
+
+
 {-| Set the `type` attribute.
 -}
-withType : String -> Source kind -> Source kind
+withType : ImageType -> Source kind -> Source kind
 withType type_ (Source config) =
     Source { config | type_ = Just type_ }
 
@@ -166,9 +182,46 @@ toAttributes : Source kind -> List (Html.Attribute msg)
 toAttributes (Source config) =
     [ Html.Attributes.attribute "srcset" config.srcset
     , Html.Extra.attributeMaybe Html.Attributes.media (Maybe.map mediaExpressionToString config.media)
-    , Html.Extra.attributeMaybe Html.Attributes.type_ config.type_
+    , Html.Extra.attributeMaybe Html.Attributes.type_ (Maybe.map imageTypeToString config.type_)
     , Html.Extra.attributeMaybe (Html.Attributes.attribute "sizes") (Maybe.map (String.join ",") config.sizes)
     ]
+
+
+imageTypeToString : ImageType -> String
+imageTypeToString type_ =
+    case type_ of
+        APNG ->
+            "image/apng"
+
+        AVIF ->
+            "image/avif"
+
+        BMP ->
+            "image/bmp"
+
+        GIF ->
+            "image/gif"
+
+        ICO ->
+            "image/x-icon"
+
+        JPEG ->
+            "image/jpeg"
+
+        JPEG_XL ->
+            "image/jxl"
+
+        PNG ->
+            "image/png"
+
+        SVG ->
+            "image/svg+xml"
+
+        TIFF ->
+            "image/tiff"
+
+        WebP ->
+            "image/webp"
 
 
 mediaExpressionToString : Css.Media.Expression -> String
