@@ -12,8 +12,7 @@
     "dependencies": {
         "dzuk-mutant/elm-css": "3.0.1 <= v < 4.0.0",
         "elm/core": "1.0.0 <= v < 2.0.0",
-        "elm/html": "1.0.1 <= v < 2.0.0",
-        "elm/url": "1.0.0 <= v < 2.0.0"
+        "elm/html": "1.0.1 <= v < 2.0.0"
     },
     "test-dependencies": {
         "elm-explorations/test": "2.0.0 <= v < 3.0.0"

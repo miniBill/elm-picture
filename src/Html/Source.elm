@@ -34,7 +34,7 @@ import Html.Attributes
 import Html.Extra
 
 
-{-| A source set of images, used to build a `source` tag.
+{-| A source set of images, used to build a [`source`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/source) tag.
 -}
 type Source kind
     = Source
@@ -45,13 +45,13 @@ type Source kind
         }
 
 
-{-| A source defined using widths (`300w`).
+{-| A source defined using widths (like `300w`).
 -}
 type WithWidths
     = WithWidths
 
 
-{-| A source defined using densities (`2x`).
+{-| A source defined using densities (like `2x`).
 -}
 type WithDensities
     = WithDensities
@@ -123,7 +123,7 @@ fromImagesAndDensities images =
         }
 
 
-{-| Set the `size` attribute. The second argument is the (optional) default size.
+{-| Set the [`sizes`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/source#sizes) attribute. The second argument is the (optional) default size.
 -}
 withSizes : List ( Css.Media.Expression, Css.Value.Value Css.Length ) -> Maybe (Css.Value.Value Css.Length) -> Source WithWidths -> Source WithWidths
 withSizes sizes default (Source config) =
@@ -157,7 +157,7 @@ type ImageType
     | WebP
 
 
-{-| Set the `type` attribute.
+{-| Set the [`type`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/source#type) attribute.
 -}
 withType : ImageType -> Source kind -> Source kind
 withType type_ (Source config) =
@@ -169,14 +169,20 @@ lengthToString ( media, Css.Value.Value length ) =
     mediaExpressionToString media ++ " " ++ length
 
 
-{-| Convert a `Source` to the corresponding html tag.
+{-| Convert a `Source` to the corresponding [`source`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/source) html tag.
+
+Equivalent to `Html.source (Html.Source.toAttributes source) []`.
+
 -}
 toHtml : Source kind -> Html.Html msg
 toHtml source =
     Html.source (toAttributes source) []
 
 
-{-| Convert a `Source` to the attributes you need to build the corresponding `source`.
+{-| Convert a `Source` to the attributes you need to build the corresponding [`source`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/source).
+
+This is useful if you want to add additional attributes to the [`source`](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/source) tag.
+
 -}
 toAttributes : Source kind -> List (Html.Attribute msg)
 toAttributes (Source config) =
